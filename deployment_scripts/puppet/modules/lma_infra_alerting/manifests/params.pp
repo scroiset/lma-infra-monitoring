@@ -21,7 +21,6 @@ class lma_infra_alerting::params {
     $nagios_debug = false
     $nagios_service_name = 'nagios3'
     $nagios_htpasswd_file = '/etc/nagios3/htpasswd.users'
-    $nagios_cmd_dummy_host = 'host-dummy-unknown'
     $nagios_contact_email = 'root@localhost'
 
     $apache_service_name = 'apache2'

@@ -22,6 +22,8 @@ class lma_infra_alerting (
   $contact_email = $lma_infra_alerting::params::nagios_contact_email
 ) inherits lma_infra_alerting::params {
 
+  include lma_infra_alerting::nagios::server_service
+
   $nagios_openstack_vhostname = $lma_infra_alerting::params::nagios_openstack_dummy_hostname
   $apache_service_name = $lma_infra_alerting::params::apache_service_name
   $nagios_htpasswd_file = $lma_infra_alerting::params::nagios_htpasswd_file
@@ -34,17 +36,17 @@ class lma_infra_alerting (
   }
 
   $nagios_main_conf_file = lma_infra_alerting::params::nagios_main_conf_file
-  $nagios_cmd_dummy_host = $lma_infra_alerting::params::nagios_cmd_dummy_host
 
-
+  # install nagios server
   class { 'lma_infra_alerting::nagios::server':
+    enable_cgi => true,
   }
 
   class { 'lma_infra_alerting::nagios::service_status':
     ip => $openstack_management_vip,
     hostname => $nagios_openstack_vhostname,
     services => $all_openstack_services,
-    notify => Class['lma_infra_alerting::nagios::server'],
+    notify => Class['lma_infra_alerting::nagios::server_service'],
   }
 
   # TODO create and configure contacts
@@ -65,6 +67,7 @@ class lma_infra_alerting (
     cryptpasswd => ht_md5($password, 'salt'),
     target      => $nagios_htpasswd_file,
   #  notify => Service[$apache_service_name],
+    require => Class['lma_infra_alerting::nagios::server'],
   }
 
   # TODO

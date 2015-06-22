@@ -12,6 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
+# Class: lma_infra_alerting::nagios::server_service
+#
+# Manage the Nagios daemon
+#
+# Example:
+# myresource { 'foo':
+#   notify => Class['lma_infra_alerting::nagios::server_service']
+#}
+#
 class lma_infra_alerting::nagios::server_service(
   $service_name = $lma_infra_alerting::params::nagios_service_name,
   $service_ensure = 'running',

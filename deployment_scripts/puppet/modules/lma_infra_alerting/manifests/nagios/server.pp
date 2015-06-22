@@ -14,16 +14,25 @@
 #
 class lma_infra_alerting::nagios::server(
   $service_name = $lma_infra_alerting::params::nagios_service_name,
-  $service_enable = true,
-  $service_ensure = 'running',
-  $service_manage = true,
   $main_config = $lma_infra_alerting::params::nagios_main_conf_file,
+  $enable_cgi = true,
 ){
-  validate_bool($service_enable)
-  validate_bool($service_manage)
+
+  include lma_infra_alerting::nagios::server_service
 
   package { $service_name:
     ensure => present,
+  }
+
+  package { 'nagios-plugins':
+    ensure => present,
+  }
+
+  if $enable_cgi {
+    package { 'nagios3-cgi':
+      ensure => present,
+      require => Package[$service_name],
+    }
   }
 
   # update inline main nagios configuration
@@ -32,7 +41,7 @@ class lma_infra_alerting::nagios::server(
     incl => $main_config,
     lens => 'nagioscfg.lns',
     changes => [
-        # passive check
+        # ensure that passive check is enabled
         "set accept_passive_service_checks 1",
 
         # TODO configure in an other lma_infra_alerting::nagios::configure
@@ -49,15 +58,6 @@ class lma_infra_alerting::nagios::server(
         #"set check_service_freshness 1",
         #"set service_freshness_check_interval 60",
         ],
-    notify => Service[$service_name],
+    notify => Class['lma_infra_alerting::nagios::server_service'],
   }
-
-  if $service_manage {
-    service {$service_name:
-      ensure => $service_ensure,
-      require => Package[$service_name],
-      enable => $service_enable,
-    }
-  }
-
 }

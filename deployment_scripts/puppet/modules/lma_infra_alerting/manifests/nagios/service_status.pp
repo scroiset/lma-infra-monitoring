@@ -22,7 +22,10 @@ class lma_infra_alerting::nagios::service_status (
   $services = [],
 ){
 
-  include lma_infra_alerting::nagios::server
+  validate_array($services)
+  validate_string($ip, $hostname)
+
+  include lma_infra_alerting::nagios::server_service
 
   #$nagios_service_name = $lma_infra_alerting::params::nagios_service_name
   $nagios_config_dir = $lma_infra_alerting::params::nagios_config_dir
@@ -38,7 +41,7 @@ class lma_infra_alerting::nagios::service_status (
     passive_checks_enabled => 1,
     register => 1,
     use => 'generic-host',
-    notify => Class['lma_infra_alerting::nagios::server'],
+    notify => Class['lma_infra_alerting::nagios::server_service'],
   }
   # 'mode' option doesn't exist for nagios_service resource
   # with puppet 3.4
@@ -49,9 +52,9 @@ class lma_infra_alerting::nagios::service_status (
 
   lma_infra_alerting::nagios::service { $services:
     path => "${nagios_config_dir}/conf.d/",
-    host => $hostname,
+    hostname => $hostname,
     passive_check => true,
-    notify => Class['lma_infra_alerting::nagios::server'],
+    notify => Class['lma_infra_alerting::nagios::server_service'],
   }
 
 }

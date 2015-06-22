@@ -12,9 +12,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
+# == Class: lma_collector::nagios::service
+#
+# Manage a Nagios service object attached to the $hostname
+#
+# == Parameters
+# path: the directory conf.d of nagios
+# hostname: A valid Nagios Hostname
+# ensure: weither or not the Nagios configuration should be present or absent
+# process_perf_data: Nagios service configuration
+# passive_checks_enabled: Nagios service configuration
+# active_check: Nagios service configuration
+# check_command: A valid command name, if not provided the class create a
+#                command returning UNKNOWN state.
+# check_interval: Nagios service configuration
+# retry_interval: Nagios service configuration
+#
 define lma_infra_alerting::nagios::service (
   $path,
-  $host,
+  $hostname,
   $ensure = present,
   $process_perf_data = false,
   $passive_check = false,
@@ -24,7 +40,6 @@ define lma_infra_alerting::nagios::service (
   $retry_interval = 30,
 ){
   validate_bool($process_perf_data, $passive_check, $active_check)
-  #validate_integer($check_interval, $retry_interval)
 
   $target = "${path}/service_${name}.cfg"
   $_passive_check = bool2num($passive_check)
@@ -46,6 +61,7 @@ define lma_infra_alerting::nagios::service (
     $_cmd_target = "${path}/cmd_service_unknown_${name}.cfg"
     nagios_command{ $_check_command:
       ensure => $ensure,
+      #TODO: filename in params
       command_line => "/usr/lib/nagios/plugins/check_dummy 3 'No data recieved since at least ${freshness_threshold} seconds'",
       target => $_cmd_target,
     }
@@ -64,7 +80,7 @@ define lma_infra_alerting::nagios::service (
     target => $target,
     service_description => "nagios_${name}",
     display_name => $name,
-    host_name => $host,
+    host_name => $hostname,
     process_perf_data => "${_process_perf_data}",
     active_checks_enabled => "${_active_check}",
     passive_checks_enabled => "${_passive_check}",
@@ -75,7 +91,7 @@ define lma_infra_alerting::nagios::service (
     check_interval => $check_interval,
     retry_interval => $retry_interval,
     use => 'generic-service',
-    require => Nagios_Host[$host],
+    require => Nagios_Host[$hostname],
   }
 
   file { $target:
@@ -84,4 +100,3 @@ define lma_infra_alerting::nagios::service (
     require => Nagios_Service[$name],
   }
 }
-

@@ -19,11 +19,13 @@
 # create contacts
 #  emails from UI
 
+$management_vip = hiera('management_vip')
+
 class { 'lma_infra_alerting':
   user => 'nagiosadmin',
   password => 'foo!',
   contact_email => 'root@localhost',
-  openstack_management_vip => '10.109.2.2',
+  openstack_management_vip => $management_vip,
   # additional services services
   openstack_services => ['foo_bar'],
 }
