@@ -52,7 +52,7 @@ There are two types of alerts which are initially supported:
    * Leverage Service status determination computed by the `LMA collector`
      plugins.
    * Provide the ability to configure alarms over metrics by querying the
-     time series database provided by the `Influxdb-Grafana` plugin [6]_
+     time series database provided by the `Influxdb-Grafana` plugin [8]_
 
 In order to integrate this new `LMA infrastructure alerting` plugin into the
 `LMA toolchain` its necessary to:
@@ -69,6 +69,24 @@ There is no available alternative to notify operators. With the `LMA toolchain`
 the only way to determine critical state would be to keep an eye on dashboards
 provided by the `Influxdb-Grafana plugin` [8]_.
 
+
+Alert severities
+----------------
+
+The service Statutes computed by the `LMA collector` and the states defined by
+Nagios map like this:
+
++---------------+----------+
+| LMA collector | Nagios   |
++===============+==========+
+| OKAY          | OK       |
++---------------+----------+
+| WARN          | WARNING  |
++---------------+----------+
+| FAIL          | CRITICAL |
++---------------+----------+
+| UNKNOWN       | UNKNOWN  |
++---------------+----------+
 
 Contacts, Alerting and Escalation
 ---------------------------------
