@@ -27,16 +27,17 @@ This specification aims to address the following use cases:
 * OpenStack operator(s) want to be notified when the status of a component
   within the infrastructure changes:
 
-  * OpenStack service status has changed (for example OK -> FAIL)
-  * Cluster (RabbitMQ, MySQL, ..)  status has changed (for example OK -> WARN)
-  * ..
+  * OpenStack service status has changed (for example OKAY -> FAIL)
+  * Cluster (RabbitMQ, MySQL, ..)  status has changed (for example OKAY -> WARN)
+  * ...
 
-* OpenStack operators(s) want to be notified when a particular condition is meet
-  in regard of system metrics.
+* OpenStack operators(s) want to be notified when a threshold crossing occurs
+  and be able to configure alarms with their own threshold against the bunch of
+  available metrics collected by `LMA collector`:
 
   * Load average is too high on a controller node.
   * File system is nearly full on a node.
-  * ..
+  * ...
 
 Proposed changes
 ================
@@ -44,37 +45,44 @@ Proposed changes
 Implement a Fuel plugin that will install and configure the LMA infrastructure
 alerting system for an OpenStack environment.
 
-The initial implementation of this plugin plan to install and configure
+The initial implementation of this plugin plans to install and configure
 Nagios [2]_ to manage alerts and send notifications to operators by email.
 
 There are two types of alerts which are initially supported:
 
-   * Leverage Service status determination computed by the `LMA collector`
-     plugins.
+   * Leverage the service status determinations computed by the `LMA collector`
+     plugins (OKAY, WARN, FAIL, UNKNOWN).
    * Provide the ability to configure alarms over metrics by querying the
      time series database provided by the `Influxdb-Grafana` plugin [8]_
 
-In order to integrate this new `LMA infrastructure alerting` plugin into the
-`LMA toolchain` its necessary to:
+In order to implement these features into the `LMA toolchain` it's necessary
+to:
 
 * Plug the `LMA collector` [3]_ to this new alerting system with the native
-  Hekad [4]_ NagiosOutputPlugin [5]_ for the glue.
-* Plug Nagios to the time series database InfluxDB [6]_ by developing
-  specialized a Nagios plugin [7]_ to allow to define alarm over metrics.
+  Hekad [4]_ NagiosOutputPlugin [5]_.
+* Plug Nagios on the time series database InfluxDB [6]_ by developing
+  a specialized Nagios plugin [7]_ to allow to define alarm over metrics.
 
 Alternatives
 ------------
 
-There is no available alternative to notify operators. With the `LMA toolchain`
-the only way to determine critical state would be to keep an eye on dashboards
-provided by the `Influxdb-Grafana plugin` [8]_.
+There are plenty of alerting solutions but Nagios is the dominant open
+source monitoring solution. Hence Nagios brings a robust and proven solution
+which match perfectly both to our alerting use case and the integration within
+a legacy infrastructure monitoring.
 
+It's not exclude to leverage other open source solutions to complete and/or
+replace Nagios in future.
+
+With `LMA toolchain v0.7` the only way to be aware of critical situations would
+be to keep constantly an eye on all dashboards provided by the
+`Influxdb-Grafana plugin` [8]_, which is not acceptable.
 
 Alert severities
 ----------------
 
-The service statutes computed by the `LMA collector` and the states defined by
-Nagios map like this:
+The service statutes computed by the `LMA collector` are mapped with the states
+defined by Nagios by this (simple) way:
 
 +---------------+----------+
 | LMA collector | Nagios   |
