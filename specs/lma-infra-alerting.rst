@@ -13,14 +13,14 @@ https://blueprints.launchpad.net/fuel/+spec/lma-infra-alerting-plugin
 
 The `LMA Infrastructure Alerting` plugin is composed of several services
 running on a node (base-os role). It provides alerting functionality for the
-OpenStack Infrastruture inside the `LMA toolchain` [1]_ plugins suite.
+OpenStack Infrastructure inside the `LMA toolchain` [1]_ plugins suite.
 
 
 Problem description
 ===================
 
 Current implementation of the `LMA toolchain` [1]_ doesn't provide the alerting
-functionnality.
+functionality.
 
 This specification aims to address the following use cases:
 
@@ -34,15 +34,15 @@ This specification aims to address the following use cases:
 * OpenStack operators(s) want to be notified when a particular condition is meet
   in regard of system metrics.
 
-  * Load average is too hight on a controller node.
-  * Filesystem is nearly full on a node.
+  * Load average is too high on a controller node.
+  * File system is nearly full on a node.
   * ..
 
 Proposed changes
 ================
 
 Implement a Fuel plugin that will install and configure the LMA infrastructure
-alerting system for an OpenStack environement.
+alerting system for an OpenStack environment.
 
 The initial implementation of this plugin plan to install and configure
 Nagios [2]_ to manage alerts and send notifications to operators by email.
@@ -59,7 +59,7 @@ In order to integrate this new `LMA infrastructure alerting` plugin into the
 
 * Plug the `LMA collector` [3]_ to this new alerting system with the native
   Hekad [4]_ NagiosOutputPlugin [5]_ for the glue.
-* Plug Nagios to the time serie database InfluxDB [6]_ by developing
+* Plug Nagios to the time series database InfluxDB [6]_ by developing
   specialized a Nagios plugin [7]_ to allow to define alarm over metrics.
 
 Alternatives
@@ -73,7 +73,7 @@ provided by the `Influxdb-Grafana plugin` [8]_.
 Alert severities
 ----------------
 
-The service Statutes computed by the `LMA collector` and the states defined by
+The service statutes computed by the `LMA collector` and the states defined by
 Nagios map like this:
 
 +---------------+----------+
@@ -110,7 +110,7 @@ configuration:
  * to add the new node(s) to Nagios configuration.
 
 A possible workaround for the 'adding case' would be to use a SSH command from
-the new node(s) deployed to run the approriate Puppet manifest on the Nagios
+the new node(s) deployed to run the appropriate Puppet manifest on the Nagios
 node. This workaround won't be explored in first glance.
 
 Data model impact
@@ -177,19 +177,19 @@ Primary assignee:
 Other contributors:
   Guillaume Thouvenin <gthouvenin@mirantis.com> (developer)
   Simon Pasquier <spasquier@mirantis.com> (feature lead, developer)
-  Irina Povolotskaya <ipovolotskaya@mirantis.com> (tech writer)
 
 Work Items
 ----------
 
 * Implement the Puppet manifests for both Ubuntu and CentOS to configure Nagios
 
-  * Commands, Services and Hosts
-  * Contacts
+  * Nagios server: main configuration.
+  * Nagios CGI (Web interface) served by Apache [10]_ and PhP [11]_.
+  * Nagios Objects configuration: Commands, Services, Hosts and Contacts.
 
 * Add support for Nagios output plugin of the LMA collector.
 
-* Implement the Nagios plugin to querying InfluxDB to be able to set alarms over
+* Implement the Nagios plugin to querying InfluxDB for alarm evaluation over
   metrics.
 
 * Testing.
@@ -253,3 +253,7 @@ References
 .. [8] https://github.com/stackforge/fuel-plugin-influxdb-grafana
 
 .. [9] https://blueprints.launchpad.net/fuel/+spec/fuel-task-notify-other-nodes
+
+.. [10] http://httpd.apache.org
+
+.. [11] http://php.net
