@@ -30,6 +30,8 @@ class lma_infra_alerting::nagios::base (
     enable_flap_detection => true,
     debug_level => 0,
     process_performance_data => false,
+    check_external_commands => true,
+    command_check_interval => 5,
   }
 
   class { 'nagios::cgi':

@@ -24,6 +24,8 @@ class nagios(
   $process_performance_data = true,
   $check_service_freshness = false,
   $service_freshness_check_interval = 60,
+  $check_external_commands = false,
+  $command_check_interval = 15,
 ) inherits nagios::params {
 
   include nagios::params
@@ -57,6 +59,7 @@ class nagios(
   $flap = bool2num($enable_flap_detection)
   $perf_data = bool2num($process_performance_data)
   $service_freshness = bool2num($check_service_freshness)
+  $external_command = bool2num($check_external_commands)
 
   augeas{ $main_config:
     incl => $main_config,
@@ -75,6 +78,8 @@ class nagios(
 
         "set check_service_freshness ${service_freshness}",
         "set service_freshness_check_interval ${service_freshness_check_interval}",
+        "set check_external_commands ${external_command}",
+        "set command_check_interval  ${command_check_interval}",
         ],
     notify => Class['nagios::server_service'],
   }

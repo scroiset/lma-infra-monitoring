@@ -50,9 +50,24 @@ class nagios::cgi (
     require => Package[$package_name],
   }
 
+  # TODO: CentOS compatibility
   $apache_user = 'www-data'
+
+  user { $apache_user:
+    groups => 'nagios',
+    require => Package[$apache_service_name],
+  }
+
+  # fix a right issue with Ubuntu
+  # TODO: CentOS compatibility
+  file { '/var/lib/nagios3/rw':
+    ensure => directory,
+    mode => '0650'
+    require => Package[$package_name],
+  }
+
   file { $cgi_htpasswd_file:
-    owner => $apache_user,
+    owner => root,
     group => $apache_user,
     mode  => '0640',
     require => Htpasswd[$cgi_user],
