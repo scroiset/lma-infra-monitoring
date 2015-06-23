@@ -12,22 +12,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-# == Class: lma_infra_alerting::nagios::contact
+# == Resource: nagios::contactgroup
 #
-# Configure contacts
+# Create contact_group Nagios object
 #
-
-class lma_infra_alerting::nagios::contact(
-  $contacts,
+define nagios::contactgroup (
+  $path = $nagios::params::config_dir,
+  $ensure = present,
 ){
 
-  $groups = keys($contacts)
-  nagios::contactgroup { $groups:
+  $target = "${path}/contactgroup_${name}.cfg"
+  nagios_contactgroup{ $name:
+    ensure => $ensure,
+    target => $target,
+    notify => Class['nagios::server_service'],
   }
 
-  $default = {
-    ensure => present,
+  file { $target:
+    mode => '0644',
+    ensure => $ensure,
+    notify => Class['nagios::server_service'],
   }
-
-  create_resources(nagios::contact, $contacts, $default)
 }

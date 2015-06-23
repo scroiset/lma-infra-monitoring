@@ -31,7 +31,12 @@ define nagios::contact (
 ){
 
   validate_array($service_notification_commands, $host_notification_commands)
-  validate_array($contact_groups)
+
+  if is_array($contact_groups){
+    $contactgroups = join($contact_groups, ',')
+  }else{
+    $contactgroups = $contact_groups
+  }
 
   $target = "${path}/contacts_${name}.cfg"
   nagios_contact{ $name:
@@ -43,7 +48,7 @@ define nagios::contact (
     host_notification_period => $host_notification_period,
     service_notification_options => $service_notification_options,
     host_notification_options => $host_notification_options,
-    contactgroups => join($contact_groups, ','),
+    contactgroups => $contact_groups,
     service_notification_commands => join($service_notification_commands, ','),
     host_notification_commands => join($host_notification_commands, ','),
     notify => Class['nagios::server_service'],
