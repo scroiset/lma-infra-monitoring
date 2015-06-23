@@ -62,7 +62,7 @@ class nagios::cgi (
   # TODO: CentOS compatibility
   file { '/var/lib/nagios3/rw':
     ensure => directory,
-    mode => '0650'
+    mode => '0650',
     require => Package[$package_name],
   }
 

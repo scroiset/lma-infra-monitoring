@@ -19,8 +19,6 @@ class lma_infra_alerting::params {
   $nagios_openstack_dummy_hostname = 'openstack-management-vip'
   $nagios_contactgroup_all = 'openstack'
   $nagios_contactgroup_critical = 'openstack-critical'
-  $nagios_contact_email_openstack_all = 'root@localhost'
-  $nagios_contact_email_openstack_critical = 'root@localhost'
 
 
   # default VIP with fuel-devops

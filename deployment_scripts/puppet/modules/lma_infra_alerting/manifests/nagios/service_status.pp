@@ -19,15 +19,17 @@ class lma_infra_alerting::nagios::service_status (
   $ip = undef,
   $hostname = undef,
   $services = [],
-  $contact_groups = $lma_infra_alerting::params::contact_groups_openstack,
 ){
 
-  validate_array($services, $contact_groups)
   validate_string($ip, $hostname)
 
   include nagios::server_service
 
   $nagios_config_dir = $nagios::params::config_dir
+
+  $contactgroup_all = $lma_infra_alerting::params::nagios_contactgroup_all
+  $contactgroup_critical = $lma_infra_alerting::params::nagios_contactgroup_critical
+  $contact_groups = [$contactgroup_all, $contactgroup_critical]
 
   $_host_filename = "${nagios_config_dir}/host_${hostname}.cfg"
   nagios_host { $hostname:

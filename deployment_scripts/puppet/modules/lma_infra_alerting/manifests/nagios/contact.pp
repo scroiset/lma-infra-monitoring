@@ -18,15 +18,58 @@
 #
 
 class lma_infra_alerting::nagios::contact(
-  $contacts,
+  #$contacts,
+  $ensure = present,
+  $email_all_notif = undef,
+  $alias_all_notif = undef,
+  $email_only_critical_notif = undef,
+  $alias_only_critical_notif = undef,
 ){
+  validate_string($email_all_notif)
+  validate_string($alias_all_notif)
+
+  $contactgroup_all = $lma_infra_alerting::params::nagios_contactgroup_all
+  $contactgroup_critical = $lma_infra_alerting::params::nagios_contactgroup_critical
+
+  $contact_groups = [$contactgroup_all, $contactgroup_critical]
+  if $email_only_critical_notif != undef {
+    $only_critical_service_notification_options = 'u,c,r'
+    $only_critical_host_notification_options = 'd,u,r'
+  }else{
+    # don't send any notification
+    $email_only_critical = $nagios::params::default_contact_email
+    $alias_only_critical = $nagios::params::default_contact_alias
+    $only_critical_service_notification_options = 'n'
+    $only_critical_host_notification_options = 'n'
+  }
+
+  $name_all = regsubst($email_all_notif, '@', '_AT_')
+  $name_critical = regsubst($email_only_critical, '@', '_AT_')
+
+  $contacts = {
+    "${contactgroup_all}" => {
+        name => "${contactgroup_all}_${name_all}",
+        email => $email_all_notif,
+        aliass => $alias_all_notif,  # alias is a metaparam
+        contact_groups => $contactgroup_all,
+        service_notification_options => 'w,u,c,r',
+        host_notification_options => 'd,u,r,f,s'},
+    "${contactgroup_critical}" => {
+        name => "${contactgroup_critical}_${name_critical}",
+        email => $email_only_critical,
+        aliass => $alias_only_critical,  # alias is a metaparam
+        contact_groups => $contactgroup_critical,
+        service_notification_options => $only_critical_service_notification_options,
+        host_notification_options => $only_critical_host_notification_options},
+  }
 
   $groups = keys($contacts)
   nagios::contactgroup { $groups:
+    ensure => $ensure,
   }
 
   $default = {
-    ensure => present,
+    ensure => $ensure,
   }
 
   create_resources(nagios::contact, $contacts, $default)

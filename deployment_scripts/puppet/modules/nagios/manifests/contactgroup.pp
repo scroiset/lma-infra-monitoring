@@ -21,16 +21,18 @@ define nagios::contactgroup (
   $ensure = present,
 ){
 
-  $target = "${path}/contactgroup_${name}.cfg"
+  $target = "${path}/contactgroups.cfg"
   nagios_contactgroup{ $name:
     ensure => $ensure,
     target => $target,
     notify => Class['nagios::server_service'],
   }
 
-  file { $target:
-    mode => '0644',
-    ensure => $ensure,
-    notify => Class['nagios::server_service'],
+  if ! defined(File[$target]){
+    file { $target:
+      mode => '0644',
+      ensure => $ensure,
+      notify => Class['nagios::server_service'],
+    }
   }
 }

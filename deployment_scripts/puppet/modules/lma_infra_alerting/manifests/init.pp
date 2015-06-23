@@ -28,50 +28,12 @@ class lma_infra_alerting (
 
   $nagios_openstack_vhostname = $lma_infra_alerting::params::nagios_openstack_dummy_hostname
 
-  $core_openstack_services = $lma_infra_alerting::params::openstack_core_services
-  if count($openstack_services) > 0{
-    $all_openstack_services = union($core_openstack_services, $openstack_services)
-  }else{
-    $all_openstack_services = $core_openstack_services
-  }
-
   # hiera data
-  $notify_critical_only_enabled = true
-  $email_all = 'foo@foo.bar'
+  $email_all = 'root@localhost'
   $alias_all = 'Foo'
-  $name_all = regsubst($email_all, '@', '_AT_')
-  $email_critical = 'foo@critical.fr'
+  $email_critical = 'root@localhost'
   $alias_critical = 'Bar Foo 42'
-  $name_critical = regsubst($email_critical, '@', '_AT_')
 
-  $contactgroup_all = $lma_infra_alerting::params::nagios_contactgroup_all
-  $contactgroup_critical = $lma_infra_alerting::params::nagios_contactgroup_critical
-  if $notify_critical_only_enabled {
-    $contact_groups = [$contactgroup_all, $contactgroup_critical]
-  }else{
-    $contact_groups = [$contactgroup_all]
-  }
-
-  $contacts = {
-    "${contactgroup_all}" => {
-        name => "${contactgroup_all}_${name_all}",
-        email => $email_all,
-        aliass => $alias_all,  # alias is a metaparam
-        contact_groups => $contactgroup_all,
-        service_notification_options => 'w,u,c,r',
-        host_notification_options => 'd,u,r,f,s'},
-  }
-
-  if $notify_critical_only_enabled {
-    $contacts["${contactgroup_critical}"] = {
-        name => "${contactgroup_critical}_${name_critical}",
-        email => $email_critical,
-        aliass => $alias_critical,  # alias is a metaparam
-        contact_groups => $contactgroup_critical,
-        service_notification_options => 'u,c,r',
-        host_notification_options => 'd,u,r',
-    }
-  }
 
   # Install and configure nagios server
   class { 'lma_infra_alerting::nagios::base':
@@ -83,12 +45,16 @@ class lma_infra_alerting (
     ip => $openstack_management_vip,
     hostname => $nagios_openstack_vhostname,
     services => $all_openstack_services,
-    contact_groups => $contact_groups,
     require => Class['lma_infra_alerting::nagios::base'],
   }
 
   class { 'lma_infra_alerting::nagios::contact':
-    contacts => $contacts,
+    email_all_notif => $email_all,
+    alias_all_notif => $alias_all,
+    email_only_critical_notif => undef,
+    alias_only_critical_notif => undef,
     require => Class['lma_infra_alerting::nagios::service_status'],
   }
+
+
 }

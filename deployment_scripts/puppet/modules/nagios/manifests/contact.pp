@@ -38,7 +38,7 @@ define nagios::contact (
     $contactgroups = $contact_groups
   }
 
-  $target = "${path}/contacts_${name}.cfg"
+  $target = "${path}/contacts.cfg"
   nagios_contact{ $name:
     ensure => $ensure,
     target => $target,
@@ -54,9 +54,11 @@ define nagios::contact (
     notify => Class['nagios::server_service'],
   }
 
-  file { $target:
-    mode => '0644',
-    ensure => $ensure,
-    notify => Class['nagios::server_service'],
+  if ! defined(File[$target]){
+    file { $target:
+      mode => '0644',
+      ensure => $ensure,
+      notify => Class['nagios::server_service'],
+    }
   }
 }

@@ -27,6 +27,7 @@ class nagios::params {
   # default Nagios contact
   $default_contact_groups = ['admins']
   $default_contact_email = 'root@localhost'
+  $default_contact_alias = 'Admin'
 
   $service_notification_commands = ['notify-service-by-email-with-long-service-output']
   $host_notification_commands = ['notify-host-by-email']
