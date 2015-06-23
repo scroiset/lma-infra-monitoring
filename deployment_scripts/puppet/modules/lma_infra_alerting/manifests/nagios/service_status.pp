@@ -12,49 +12,48 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-# Configure nagios to enable passive_check by default
 # Configure a Nagios host object targeting the management VIP
 # Configure related services corresponding to OpenStack services status.
-# 
+#
 class lma_infra_alerting::nagios::service_status (
   $ip = undef,
   $hostname = undef,
   $services = [],
+  $contact_groups = $lma_infra_alerting::params::contact_groups_openstack,
 ){
 
-  validate_array($services)
+  validate_array($services, $contact_groups)
   validate_string($ip, $hostname)
 
-  include lma_infra_alerting::nagios::server_service
+  include nagios::server_service
 
-  #$nagios_service_name = $lma_infra_alerting::params::nagios_service_name
-  $nagios_config_dir = $lma_infra_alerting::params::nagios_config_dir
+  $nagios_config_dir = $nagios::params::config_dir
 
-  $_host_filename = "${nagios_config_dir}/conf.d/host_${hostname}.cfg"
+  $_host_filename = "${nagios_config_dir}/host_${hostname}.cfg"
   nagios_host { $hostname:
     target => $_host_filename,
     #mode => '0644',
     ensure => present,
     host_name => $hostname,
     address =>  $ip,
-    contact_groups => 'admins',
+    contact_groups => join($contact_groups, ','),
     passive_checks_enabled => 1,
     register => 1,
     use => 'generic-host',
-    notify => Class['lma_infra_alerting::nagios::server_service'],
+    notify => Class['nagios::server_service'],
   }
   # 'mode' option doesn't exist for nagios_service resource
   # with puppet 3.4
   file { $_host_filename:
     mode => '0644',
     require => Nagios_Host[$hostname],
+    notify => Class['nagios::server_service'],
   }
 
-  lma_infra_alerting::nagios::service { $services:
-    path => "${nagios_config_dir}/conf.d/",
+  nagios::service { $services:
+    path => "${nagios_config_dir}",
     hostname => $hostname,
     passive_check => true,
-    notify => Class['lma_infra_alerting::nagios::server_service'],
+    contact_groups => $contact_groups,
   }
-
 }

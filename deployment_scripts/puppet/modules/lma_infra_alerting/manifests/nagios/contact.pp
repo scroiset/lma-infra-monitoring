@@ -12,30 +12,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-# Class: lma_infra_alerting::nagios::server_service
+# == Class: lma_infra_alerting::nagios::contact
 #
-# Manage the Nagios daemon
+# Configure contacts
 #
-# Example:
-# myresource { 'foo':
-#   notify => Class['lma_infra_alerting::nagios::server_service']
-#}
-#
-class lma_infra_alerting::nagios::server_service(
-  $service_name = $lma_infra_alerting::params::nagios_service_name,
-  $service_ensure = 'running',
-  $service_enable = true,
-  $service_manage = true,
+
+class lma_infra_alerting::nagios::contact(
+  $contacts,
 ){
 
-  validate_bool($service_enable)
-  validate_bool($service_manage)
 
-  if $service_manage {
-    service {$service_name:
-      ensure => $service_ensure,
-      require => Package[$service_name],
-      enable => $service_enable,
-    }
+  #create_resource(nagios_contactgroup, keys($contacts)
+
+  $default = {
+    ensure => present,
   }
+
+  create_resources(nagios::contact, $contacts, $default)
 }

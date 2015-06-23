@@ -13,27 +13,27 @@
 #    under the License.
 #
 class lma_infra_alerting::params {
-    $nagios_http_user = 'nagiosadmin'
-    $nagios_http_password = 'r00tme'
-    $nagios_config_dir = '/etc/nagios3'
-    $nagios_main_conf_file = '/etc/nagios3/nagios.cfg'
-    $nagios_openstack_dummy_hostname = 'openstack-management-vip'
-    $nagios_debug = false
-    $nagios_service_name = 'nagios3'
-    $nagios_htpasswd_file = '/etc/nagios3/htpasswd.users'
-    $nagios_contact_email = 'root@localhost'
+  $nagios_http_user = 'nagiosadmin'
+  $nagios_http_password = 'r00tme'
 
-    $apache_service_name = 'apache2'
+  $nagios_openstack_dummy_hostname = 'openstack-management-vip'
+  $nagios_contact_group_openstack_all = ['openstack']
+  $nagios_contact_group_openstack_critical = ['openstack-critical']
+  $nagios_contact_email_openstack_all = 'root@localhost'
+  $nagios_contact_email_openstack_critical = 'root@localhost'
+  $nagios_contact_groups_openstack = union($nagios_contact_group_openstack_all, $nagios_contact_group_openstack_critical)
 
-    # default management VIP with fuel-devops
-    $openstack_management_vip = '10.109.2.2'
 
-    # following service names must be coherent with lma_collector nagios output
-    # plugin names
-    $openstack_core_services = [
-        'openstack_nova_status',
-        'openstack_glance_status',
-        'openstack_cinder_status',
-        'openstack_neutron_status',
-    ]
+  # default VIP with fuel-devops
+  $openstack_management_vip = '10.109.2.2'
+  $openstack_public_vip = '10.109.1.2'
+
+  # Following service names must be coherent with lma_collector nagios output
+  # plugin names. The dot '.' is not supported by heka's plugin names.
+  $openstack_core_services = [
+      'openstack_nova_status',
+      'openstack_glance_status',
+      'openstack_cinder_status',
+      'openstack_neutron_status',
+  ]
 }

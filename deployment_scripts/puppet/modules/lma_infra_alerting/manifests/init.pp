@@ -12,21 +12,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-# Configure nagios server, add services status monitoring
-# Configure  Apache
+# Configure nagios server, nagios cgi
+# Add services status monitoring and their contacts
+#
 class lma_infra_alerting (
   $openstack_management_vip = $lma_infra_alerting::params::openstack_management_vip,
+  $openstack_public_vip = $lma_infra_alerting::params::openstack_public_vip,
   $user = $lma_infra_alerting::params::nagios_http_user,
   $password = $lma_infra_alerting::params::nagios_http_password,
   $openstack_services = [],
-  $contact_email = $lma_infra_alerting::params::nagios_contact_email
+  $contact_groups_openstack = $lma_infra_alerting::params::nagios_contact_groups_openstack,
+  $contact_email = $lma_infra_alerting::params::nagios_contact_email,
 ) inherits lma_infra_alerting::params {
 
-  include lma_infra_alerting::nagios::server_service
+  include nagios::server_service
+
+  validate_array($contact_groups_openstack)
 
   $nagios_openstack_vhostname = $lma_infra_alerting::params::nagios_openstack_dummy_hostname
-  $apache_service_name = $lma_infra_alerting::params::apache_service_name
-  $nagios_htpasswd_file = $lma_infra_alerting::params::nagios_htpasswd_file
 
   $core_openstack_services = $lma_infra_alerting::params::openstack_core_services
   if count($openstack_services) > 0{
@@ -35,47 +38,34 @@ class lma_infra_alerting (
     $all_openstack_services = $core_openstack_services
   }
 
-  $nagios_main_conf_file = lma_infra_alerting::params::nagios_main_conf_file
+  $contact_all_group = $lma_infra_alerting::params::nagios_contact_group_openstack_all
+  $email_all = 'foo@foo.bar'
+  $alias_all = 'Foo'
+  $contacts  = {
+    "${contact_all_group}" => {email => $email_all, aliass => $alias_all, service_notification_options => 'w,u,c,r', host_notification_options => 'd,u,r,f,s'},
+  #  $contact_critical_group => {email => 'foo@two.one', aliass => 'FOo twooo Name', service_notification_options => 'u,c,r'}
+  }
+  $contact_critical_group = $lma_infra_alerting::params::nagios_contact_group_openstack_critical
 
-  # install nagios server
-  class { 'lma_infra_alerting::nagios::server':
-    enable_cgi => true,
+  # Install and configure nagios server
+  class { 'lma_infra_alerting::nagios::base':
+    http_user => $user,
+    http_password => $password,
   }
 
   class { 'lma_infra_alerting::nagios::service_status':
     ip => $openstack_management_vip,
     hostname => $nagios_openstack_vhostname,
     services => $all_openstack_services,
-    notify => Class['lma_infra_alerting::nagios::server_service'],
+    contact_groups => $contact_groups_openstack,
+    require => Class['lma_infra_alerting::nagios::base'],
+  #  notify => Class['nagios::server_service'],
   }
-
-  # TODO create and configure contacts
-
-  # Configure apache
-  # TODO http port and vhost
-  package {$apache_service_name:
-    ensure => present,
-  }
-
-  service {$apache_service_name:
-    ensure => running,
-    require => Package[$apache_service_name],
-  }
-
-  htpasswd { $user:
-    # TODO randomize salt?
-    cryptpasswd => ht_md5($password, 'salt'),
-    target      => $nagios_htpasswd_file,
-  #  notify => Service[$apache_service_name],
-    require => Class['lma_infra_alerting::nagios::server'],
-  }
-
-  # TODO
-  $apache_user = 'www-data'
-  file { $nagios_htpasswd_file:
-    owner => $apache_user,
-    group => $apache_user,
-    mode  => '0640',
-    require => Htpasswd[$user],
+  # This explicit dependancy is important, because
+  # require => Class[] DOESN'T work, certainly due to the create_resources() call
+  # inside the lma_infra_alerting::nagios::contact
+  class { 'lma_infra_alerting::nagios::contact':
+    contacts => $contacts,
+    require => Class['lma_infra_alerting::nagios::service_status'],
   }
 }

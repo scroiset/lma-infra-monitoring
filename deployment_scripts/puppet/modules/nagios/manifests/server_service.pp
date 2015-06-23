@@ -12,23 +12,31 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
+# Class: nagios::server_service
+#
+# Manage the Nagios daemon
+#
+# Example:
+# myresource { 'foo':
+#   notify => Class['nagios::server_service']
+#}
+#
+class nagios::server_service(
+  $service_name = $nagios::params::nagios_service_name,
+  $service_ensure = 'running',
+  $service_enable = true,
+  $service_manage = true,
+) inherits nagios::params {
 
-# check base-os role
-# check node name w/ user param
+  validate_bool($service_enable)
+  validate_bool($service_manage)
 
-# create contacts
-#  emails from UI
-
-$management_vip = hiera('management_vip')
-$public_vip = hiera('public_vip')
-
-# TODO configure Firewall
-
-class { 'lma_infra_alerting':
-  user => 'nagiosadmin',
-  password => 'foo!',
-  contact_email => 'root@localhost',
-  openstack_management_vip => $management_vip,
-  # additional services
-  openstack_services => ['foo_bar'],
+  if $service_manage {
+    service {$service_name:
+      ensure => $service_ensure,
+      require => Package[$service_name],
+      enable => $service_enable,
+    }
+  }
 }
+

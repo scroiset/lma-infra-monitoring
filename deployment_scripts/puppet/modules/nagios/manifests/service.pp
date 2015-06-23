@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-# == Class: lma_collector::nagios::service
+# == Resource: nagios::service
 #
 # Manage a Nagios service object attached to the $hostname
 #
@@ -27,9 +27,13 @@
 #                command returning UNKNOWN state.
 # check_interval: Nagios service configuration
 # retry_interval: Nagios service configuration
+# freshness_factor: if passive_check enabled, the factor (1.5 by default) used
+#                   to enable and configure freshness options:
+#                   check_freshness = 1
+#                   freshness_threshold = check_interval * freshness_factor
 #
-define lma_infra_alerting::nagios::service (
-  $path,
+define nagios::service (
+  $path = $nagios::params::config_dir,
   $hostname,
   $ensure = present,
   $process_perf_data = false,
@@ -38,8 +42,13 @@ define lma_infra_alerting::nagios::service (
   $check_command = undef,
   $check_interval = 30,
   $retry_interval = 30,
+  $freshness_factor = 1.5,
+  $contact_groups = $nagios::params::default_contact_groups,
+  $use = 'generic-service',
 ){
+
   validate_bool($process_perf_data, $passive_check, $active_check)
+  validate_array($contact_groups)
 
   $target = "${path}/service_${name}.cfg"
   $_passive_check = bool2num($passive_check)
@@ -49,7 +58,7 @@ define lma_infra_alerting::nagios::service (
   if $passive_check{
     $max_check_attemmpts = 1
     $check_freshness = 1
-    $freshness_threshold = floor($check_interval * 1.5)
+    $freshness_threshold = floor($check_interval * $freshness_factor)
   }else{
     $max_check_attemmpts = 3
     $check_freshness = 0
@@ -58,18 +67,20 @@ define lma_infra_alerting::nagios::service (
 
   if $check_command == undef {
     $_check_command = "return-unknown-${name}"
-    $_cmd_target = "${path}/cmd_service_unknown_${name}.cfg"
-    nagios_command{ $_check_command:
+    $_cmd_target = "${path}/cmd_service_${name}.cfg"
+    nagios_command { $_check_command:
       ensure => $ensure,
       #TODO: filename in params
       command_line => "/usr/lib/nagios/plugins/check_dummy 3 'No data recieved since at least ${freshness_threshold} seconds'",
       target => $_cmd_target,
+      notify => Class['nagios::server_service'],
     }
 
     file { $_cmd_target:
       mode => '0644',
       ensure => $ensure,
       require => Nagios_Command[$_check_command],
+      notify => Class['nagios::server_service'],
     }
   }else{
     $_check_command = $_check_command
@@ -90,13 +101,17 @@ define lma_infra_alerting::nagios::service (
     freshness_threshold => "${freshness_threshold}",
     check_interval => $check_interval,
     retry_interval => $retry_interval,
-    use => 'generic-service',
-    require => Nagios_Host[$hostname],
+    contact_groups => join($contact_groups, ','),
+    use => $use,
+    #require => Nagios_Host[$hostname],
+    notify => Class['nagios::server_service'],
   }
 
   file { $target:
     mode => '0644',
     ensure => $ensure,
     require => Nagios_Service[$name],
+    notify => Class['nagios::server_service'],
   }
 }
+
