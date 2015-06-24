@@ -17,7 +17,6 @@
 #
 class lma_infra_alerting (
   $openstack_management_vip = $lma_infra_alerting::params::openstack_management_vip,
-  $openstack_public_vip = $lma_infra_alerting::params::openstack_public_vip,
   $user = $lma_infra_alerting::params::nagios_http_user,
   $password = $lma_infra_alerting::params::nagios_http_password,
   $openstack_services = [],
@@ -25,6 +24,7 @@ class lma_infra_alerting (
 ) inherits lma_infra_alerting::params {
 
   include nagios::server_service
+  validate_array($openstack_services)
 
   $nagios_openstack_vhostname = $lma_infra_alerting::params::nagios_openstack_dummy_hostname
 
@@ -34,6 +34,12 @@ class lma_infra_alerting (
   $email_critical = 'root@localhost'
   $alias_critical = 'Bar Foo 42'
 
+  $core_openstack_services = $lma_infra_alerting::params::openstack_core_services
+  if count($openstack_services) > 0{
+    $all_openstack_services = union($core_openstack_services, $openstack_services)
+  }else{
+    $all_openstack_services = $core_openstack_services
+  }
 
   # Install and configure nagios server
   class { 'lma_infra_alerting::nagios::base':
