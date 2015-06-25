@@ -10,7 +10,6 @@ FUEL_LIB_TARBALL_URL="https://github.com/stackforge/fuel-library/archive/${FUEL_
 
 
 function download_packages {
-    return 0
     while [ $# -gt 0 ]; do
         FILENAME=$(basename "$1")
         EXT=${FILENAME##*.}

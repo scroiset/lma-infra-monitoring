@@ -14,23 +14,32 @@
 #
 class lma_infra_alerting::params {
   $nagios_http_user = 'nagiosadmin'
-  $nagios_http_password = 'r00tme'
+  $nagios_http_password = ''
 
+  # Following hostname must match with lma_collector::params::nagios_hostname_service_status
   $nagios_openstack_dummy_hostname = 'openstack-management-vip'
   $nagios_contactgroup_all = 'openstack'
   $nagios_contactgroup_critical = 'openstack-critical'
+  $nagios_contact_email = 'root@localhost'
+  $nagios_contact_alias = 'Admin'
+  $nagios_contact_critical_email = 'root@localhost'
+  $nagios_contact_critical_alias = 'SuperHero'
 
-
-  # default VIP with fuel-devops
+  # default VIPs with fuel-devops
   $openstack_management_vip = '10.109.2.2'
   $openstack_public_vip = '10.109.1.2'
 
   # Following service names must be coherent with lma_collector nagios output
-  # plugin names. The dot '.' is not supported by heka's plugin names.
+  # plugin names.
   $openstack_core_services = [
-      'openstack_nova_status',
-      'openstack_glance_status',
-      'openstack_cinder_status',
-      'openstack_neutron_status',
+      'openstack.keystone.status',
+      'openstack.nova.status',
+      'openstack.glance.status',
+      'openstack.cinder.status',
+      'openstack.neutron.status',
+      'openstack.heat.status',
   ]
+  $openstack_others_services_map = {
+      'ceilometer' => 'openstack.ceilometer.status',
+  }
 }

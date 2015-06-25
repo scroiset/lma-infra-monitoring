@@ -18,7 +18,6 @@
 #
 
 class lma_infra_alerting::nagios::contact(
-  #$contacts,
   $ensure = present,
   $email_all_notif = undef,
   $alias_all_notif = undef,
@@ -33,8 +32,10 @@ class lma_infra_alerting::nagios::contact(
 
   $contact_groups = [$contactgroup_all, $contactgroup_critical]
   if $email_only_critical_notif != undef {
-    $only_critical_service_notification_options = 'u,c,r'
-    $only_critical_host_notification_options = 'd,u,r'
+    # critical and recovery state for services
+    $only_critical_service_notification_options = 'c,r'
+    # down and recovery state for hosts
+    $only_critical_host_notification_options = 'd,r'
   }else{
     # don't send any notification
     $email_only_critical = $nagios::params::default_contact_email
@@ -66,10 +67,12 @@ class lma_infra_alerting::nagios::contact(
   $groups = keys($contacts)
   nagios::contactgroup { $groups:
     ensure => $ensure,
+    prefix => 'lma_'
   }
 
   $default = {
     ensure => $ensure,
+    prefix => 'lma_'
   }
 
   create_resources(nagios::contact, $contacts, $default)

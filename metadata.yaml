@@ -1,9 +1,9 @@
 # Plugin name
-name: lma-infrastructure-alerting
+name: lma_infrastructure_alerting
 # Human-readable name for your plugin
-title: LMA Infrastructure Alerting
+title: The LMA Infrastructure Alerting Plugin
 # Plugin version
-version: '0.0.7'
+version: '0.7.0'
 # Description
 description: Deploy tools to manage alerts of the OpenStack infrastrucutre
 # Required fuel version

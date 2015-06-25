@@ -1,23 +1,39 @@
-# This tasks will be applied on controller nodes,
-# here you can also specify several roles, for example
-# ['cinder', 'compute'] will be applied only on
-# cinder and compute nodes
-- role: ['controller']
-  stage: post_deployment
-  type: shell
+# TODO: check environment coherence
+#- role: ['base-os']
+#  stage: post_deployment/8000
+#  type: puppet
+#  parameters:
+#    puppet_manifest: puppet/manifests/check_environment_configuration.pp
+#    puppet_modules: puppet/modules
+#    timeout: 300
+
+# The following tasks are executed in the order they are declared
+- role: ['base-os']
+  stage: post_deployment/8100
+  type: puppet
   parameters:
-    cmd: ./deploy.sh
-    timeout: 42
-# Task is applied for all roles
-- role: '*'
-  stage: pre_deployment
-  type: shell
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/netconfig/netconfig.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 720
+
+- role: ['base-os']
+  stage: post_deployment/8100
+  type: reboot
   parameters:
-    cmd: echo all > /tmp/plugin.all
-    timeout: 42
-# "reboot" task reboots the nodes and waits until they get back online
-# - role: '*'
-#   stage: pre_deployment
-#   type: reboot
-#   parameters:
-#     timeout: 600
+    timeout: 600
+
+- role: ['base-os']
+  stage: post_deployment/8100
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/firewall.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 300
+
+- role: ['base-os']
+  stage: post_deployment/8100
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/nagios.pp
+    puppet_modules: puppet/modules
+    timeout: 600

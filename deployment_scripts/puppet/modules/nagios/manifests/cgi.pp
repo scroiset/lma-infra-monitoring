@@ -42,6 +42,7 @@ class nagios::cgi (
     require => Package[$apache_service_name],
   }
 
+  # TODO: update cgi config to allow this specific user to access UI
   htpasswd { $cgi_user:
     # TODO randomize salt?
     cryptpasswd => ht_md5($cgi_password, 'salt'),

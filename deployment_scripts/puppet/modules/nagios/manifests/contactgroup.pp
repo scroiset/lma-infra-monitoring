@@ -19,9 +19,10 @@
 define nagios::contactgroup (
   $path = $nagios::params::config_dir,
   $ensure = present,
+  $prefix = '',
 ){
 
-  $target = "${path}/contactgroups.cfg"
+  $target = "${path}/${prefix}contactgroups.cfg"
   nagios_contactgroup{ $name:
     ensure => $ensure,
     target => $target,
@@ -30,8 +31,8 @@ define nagios::contactgroup (
 
   if ! defined(File[$target]){
     file { $target:
-      mode => '0644',
       ensure => $ensure,
+      mode => '0644',
       notify => Class['nagios::server_service'],
     }
   }

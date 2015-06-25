@@ -12,31 +12,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-# Configure nagios server, nagios cgi
+# Configure Nagios server and Nagios CGI
 # Add services status monitoring and their contacts
 #
-class lma_infra_alerting (
+class lma_infra_alerting::nagios (
   $openstack_management_vip = $lma_infra_alerting::params::openstack_management_vip,
   $user = $lma_infra_alerting::params::nagios_http_user,
   $password = $lma_infra_alerting::params::nagios_http_password,
-  $openstack_services = [],
+  $services = [],
   $contact_email = $lma_infra_alerting::params::nagios_contact_email,
+  $contact_alias = $lma_infra_alerting::params::nagios_contact_alias,
+  $contact_email_critical = $lma_infra_alerting::params::nagios_contact_critical_email,
+  $contact_alias_critical = $lma_infra_alerting::params::nagios_contact_critical_alias,
 ) inherits lma_infra_alerting::params {
 
-  include nagios::server_service
-  validate_array($openstack_services)
+  validate_array($services)
 
   $nagios_openstack_vhostname = $lma_infra_alerting::params::nagios_openstack_dummy_hostname
 
-  # hiera data
-  $email_all = 'root@localhost'
-  $alias_all = 'Foo'
-  $email_critical = 'root@localhost'
-  $alias_critical = 'Bar Foo 42'
-
   $core_openstack_services = $lma_infra_alerting::params::openstack_core_services
-  if count($openstack_services) > 0{
-    $all_openstack_services = union($core_openstack_services, $openstack_services)
+  if count($services) > 0{
+    $all_openstack_services = union($core_openstack_services, $services)
   }else{
     $all_openstack_services = $core_openstack_services
   }
@@ -47,6 +43,7 @@ class lma_infra_alerting (
     http_password => $password,
   }
 
+  # Configure services
   class { 'lma_infra_alerting::nagios::service_status':
     ip => $openstack_management_vip,
     hostname => $nagios_openstack_vhostname,
@@ -54,13 +51,12 @@ class lma_infra_alerting (
     require => Class['lma_infra_alerting::nagios::base'],
   }
 
+  # Configure contacts
   class { 'lma_infra_alerting::nagios::contact':
-    email_all_notif => $email_all,
-    alias_all_notif => $alias_all,
-    email_only_critical_notif => undef,
-    alias_only_critical_notif => undef,
+    email_all_notif => $contact_email,
+    alias_all_notif => $contact_alias,
+    email_only_critical_notif => $contact_email_critical,
+    alias_only_critical_notif => $contact_alias_critical,
     require => Class['lma_infra_alerting::nagios::service_status'],
   }
-
-
 }

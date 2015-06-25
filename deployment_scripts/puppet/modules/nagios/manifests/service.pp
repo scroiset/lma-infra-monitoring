@@ -34,7 +34,7 @@
 #
 define nagios::service (
   $path = $nagios::params::config_dir,
-  $hostname,
+  $hostname = undef,
   $ensure = present,
   $process_perf_data = false,
   $passive_check = false,
@@ -45,12 +45,14 @@ define nagios::service (
   $freshness_factor = 1.5,
   $contact_groups = $nagios::params::default_contact_groups,
   $use = 'generic-service',
+  $prefix = '',
 ){
 
   validate_bool($process_perf_data, $passive_check, $active_check)
   validate_array($contact_groups)
+  validate_string($hostname)
 
-  $target = "${path}/service_${name}.cfg"
+  $target = "${path}/${prefix}service_${name}.cfg"
   $_passive_check = bool2num($passive_check)
   $_active_check = bool2num($active_check)
   $_process_perf_data = bool2num($process_perf_data)

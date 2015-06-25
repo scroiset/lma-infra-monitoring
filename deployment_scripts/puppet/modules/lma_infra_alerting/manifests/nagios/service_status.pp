@@ -33,9 +33,9 @@ class lma_infra_alerting::nagios::service_status (
 
   $_host_filename = "${nagios_config_dir}/host_${hostname}.cfg"
   nagios_host { $hostname:
+    ensure => present,
     target => $_host_filename,
     #mode => '0644',
-    ensure => present,
     host_name => $hostname,
     address =>  $ip,
     contact_groups => join($contact_groups, ','),
@@ -53,7 +53,8 @@ class lma_infra_alerting::nagios::service_status (
   }
 
   nagios::service { $services:
-    path => "${nagios_config_dir}",
+    path => $nagios_config_dir,
+    prefix => 'lma_',
     hostname => $hostname,
     passive_check => true,
     contact_groups => $contact_groups,

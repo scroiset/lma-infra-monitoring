@@ -28,6 +28,7 @@ define nagios::contact (
   $contact_groups = $nagios::params::default_contact_groups,
   $service_notification_commands = $nagios::params::service_notification_commands,
   $host_notification_commands = $nagios::params::host_notification_commands,
+  $prefix = '',
 ){
 
   validate_array($service_notification_commands, $host_notification_commands)
@@ -38,7 +39,7 @@ define nagios::contact (
     $contactgroups = $contact_groups
   }
 
-  $target = "${path}/contacts.cfg"
+  $target = "${path}/${prefix}contacts.cfg"
   nagios_contact{ $name:
     ensure => $ensure,
     target => $target,
@@ -56,8 +57,8 @@ define nagios::contact (
 
   if ! defined(File[$target]){
     file { $target:
-      mode => '0644',
       ensure => $ensure,
+      mode => '0644',
       notify => Class['nagios::server_service'],
     }
   }
